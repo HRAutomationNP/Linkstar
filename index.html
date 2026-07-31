@@ -638,7 +638,7 @@ function cardFilter(type){
   // banner देखाउने + कार्ड हाइलाइट
   const b = document.getElementById('card-filter-banner');
   document.getElementById('card-filter-label').innerHTML =
-    `देखाइँदै: <b>${labels[type]}</b> — आ.व. <b>${fy.label}</b> मा`;
+    `<b>${labels[type]}</b> — आ.व. <b>${fy.label}</b> मा`;
   b.classList.add('show');
   document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
   event && event.currentTarget && event.currentTarget.classList.add('card-active');
@@ -698,7 +698,7 @@ function renderWorkers(){
   if(activeCardFilter){
     const fy = currentFY();
     document.getElementById('card-filter-label').innerHTML =
-      `देखाइँदै: <b>${activeCardFilter.label}</b> — आ.व. <b>${fy.label}</b> मा`;
+      `<b>${activeCardFilter.label}</b> — आ.व. <b>${fy.label}</b> मा`;
   }
   document.getElementById('w-table').innerHTML = rows.map(w=>`
     <tr>
@@ -836,8 +836,10 @@ function expiryCell(d){
 }
 function renderPres(){
   const q = (document.getElementById('p-search').value||'').toLowerCase();
+  const fy = currentFY();
   const rows = pres.filter(p =>
-    !q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q)
+    inFY(p.approvalDate, fy)   // माथि छानेको आ.व.को मात्र
+    && (!q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q))
   ).sort((a,b)=>(b.approvalDate||'').localeCompare(a.approvalDate||''));
   document.getElementById('p-table').innerHTML = rows.map(p=>`
     <tr>
