@@ -227,7 +227,11 @@ body.role-staff .admin-only{display:none !important;}
       </div>
       <div class="card">
         <div class="card-title">पूर्व स्वीकृति सूची</div>
-        <input type="text" id="p-search" class="search-control" placeholder="🔍 देश, कम्पनी वा लट नंबाट खोज्नुहोस्..." oninput="renderPres()">
+        <input type="text" id="p-search" class="search-control" placeholder="🔍 देश, कम्पनी वा लट नंबाट खोज्नुहोस्..." oninput="onPreManualSearch()">
+        <div class="card-filter-banner" id="pre-filter-banner">
+          <span id="pre-filter-label"></span>
+          <button onclick="clearPreFilter()">✕ हटाउनुहोस् (सबै हेर्न)</button>
+        </div>
         <div style="overflow-x:auto;">
           <table><thead><tr><th>Date</th><th>Lot No</th><th>Country</th><th>Company</th><th>M</th><th>F</th><th>Total</th><th>Expiry</th><th></th></tr></thead>
           <tbody id="p-table"></tbody></table>
@@ -531,6 +535,12 @@ function switchTab(ev, id){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   ev.currentTarget.classList.add('active');
+  // ट्याब बटनबाट Pre-Permission खोल्दा सबै देखिने (कार्ड फिल्टर हट्ने)
+  if(id==='tab-pre' && preCardFY){
+    preCardFY = null;
+    document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+    renderPres();
+  }
 }
 
 // ================= DASHBOARD =================
@@ -620,6 +630,7 @@ document.getElementById('worker-form').addEventListener('submit', async function
 });
 
 let activeCardFilter = null;  // {type, label}
+let preCardFY = null;  // Pre-Permission कार्डबाट आएको आ.व. फिल्टर (null = सबै)
 
 function cardFilter(type){
   const fy = currentFY();
@@ -628,7 +639,15 @@ function cardFilter(type){
     pending:'⏳ उड्न बाँकी', cancel:'⊘ Cancel', rejected:'✗ Rejected'
   };
   // Pre-Permission अलग tab मा — त्यतै पठाउने
-  if(type==='pre'){ switchTabById('tab-pre'); return; }
+  // Pre-Permission कार्ड → Pre-Permission tab मा त्यही आ.व.को मात्र + कार्ड हाइलाइट
+  if(type==='pre'){
+    preCardFY = fy;
+    switchTabById('tab-pre');
+    document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+    event && event.currentTarget && event.currentTarget.classList.add('card-active');
+    renderPres();
+    return;
+  }
   activeCardFilter = { type, label: labels[type] };
   // Master Record tab मा जाने
   switchTabById('tab-workers');
@@ -840,11 +859,31 @@ function expiryCell(d){
   if(diff <= 60) return `<span class="exp-warn">${d} (${diff} दिन)</span>`;
   return d;
 }
+function onPreManualSearch(){
+  // म्यानुअल खोज्दा कार्ड फिल्टर हट्ने
+  if(preCardFY){ preCardFY = null; document.getElementById('pre-filter-banner').classList.remove('show'); document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active')); }
+  renderPres();
+}
+function clearPreFilter(){
+  preCardFY = null;
+  document.getElementById('pre-filter-banner').classList.remove('show');
+  document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+  renderPres();
+}
+
 function renderPres(){
   const q = (document.getElementById('p-search').value||'').toLowerCase();
-  // सबै आ.व.का पूर्व स्वीकृति देखिने (POA expiry मिति हेर्न) — नयाँ माथि
+  // preCardFY सेट भए त्यही आ.व.को मात्र; नभए सबै (POA expiry हेर्न) — नयाँ माथि
+  const banner = document.getElementById('pre-filter-banner');
+  if(preCardFY){
+    document.getElementById('pre-filter-label').innerHTML = `<b>Pre-Permission</b> — आ.व. <b>${preCardFY.label}</b> मा`;
+    banner.classList.add('show');
+  } else if(banner){
+    banner.classList.remove('show');
+  }
   const rows = pres.filter(p =>
-    !q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q)
+    (!preCardFY || inFY(p.approvalDate, preCardFY))
+    && (!q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q))
   ).sort((a,b)=>(b.approvalDate||'').localeCompare(a.approvalDate||''));
   document.getElementById('p-table').innerHTML = rows.map(p=>`
     <tr>
