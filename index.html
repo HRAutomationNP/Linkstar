@@ -33,6 +33,13 @@ header p{color:#bfdbfe;font-size:14px;}
 .stat-card.c-fly{border-top-color:var(--info);} .stat-card.c-fly .value{color:var(--info);}
 .stat-card.c-rem{border-top-color:var(--warning);} .stat-card.c-rem .value{color:var(--warning);}
 .stat-card.c-can{border-top-color:var(--danger);} .stat-card.c-can .value{color:var(--danger);}
+.clickable-card{cursor:pointer;transition:transform .1s,box-shadow .1s;}
+.clickable-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.clickable-card.card-active{box-shadow:0 0 0 3px var(--primary);}
+.card-filter-banner{background:#eff6ff;border:1px solid var(--primary);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;font-size:14px;}
+.card-filter-banner.show{display:flex;}
+.card-filter-banner b{color:var(--primary);}
+.card-filter-banner button{background:var(--danger);color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;}
 .tab-navigation{display:flex;gap:10px;margin-bottom:20px;border-bottom:3px solid var(--border);padding-bottom:10px;flex-wrap:wrap;}
 .tab-btn{padding:11px 22px;font-size:15px;font-weight:700;background:#e2e8f0;border:none;border-radius:6px;cursor:pointer;color:var(--text);}
 .tab-btn.active{background:var(--primary);color:#fff;}
@@ -127,12 +134,12 @@ body.role-staff .admin-only{display:none !important;}
   </div>
 
   <div class="dashboard-grid">
-    <div class="stat-card c-pre"><h3>Pre-Permission</h3><div class="value" id="d-pre-total">०</div><div class="sub" id="d-pre-sub">M 0 | F 0 | Lot 0</div></div>
-    <div class="stat-card c-app"><h3>Final Approval</h3><div class="value" id="d-approved">०</div><div class="sub" id="d-app-sub">M 0 | F 0</div></div>
-    <div class="stat-card c-fly"><h3>✈ Departure</h3><div class="value" id="d-flown">०</div><div class="sub" id="d-flown-sub">This FY 0 | Previous FY 0</div></div>
-    <div class="stat-card c-rem"><h3>⏳ Departure Pending</h3><div class="value" id="d-remaining">०</div><div class="sub" id="d-rem-sub">of 0 approved this FY</div></div>
-    <div class="stat-card c-can"><h3>⊘ Cancel</h3><div class="value" id="d-cancel">०</div><div class="sub">&nbsp;</div></div>
-    <div class="stat-card c-can"><h3>✗ Rejected</h3><div class="value" id="d-rejected">०</div><div class="sub" id="d-rej-sub">&nbsp;</div></div>
+    <div class="stat-card c-pre clickable-card" onclick="cardFilter('pre')" title="क्लिक गर्नुहोस् — यसै आ.व.को पूर्व स्वीकृति हेर्न"><h3>Pre-Permission</h3><div class="value" id="d-pre-total">०</div><div class="sub" id="d-pre-sub">M 0 | F 0 | Lot 0</div></div>
+    <div class="stat-card c-app clickable-card" onclick="cardFilter('approved')" title="क्लिक गर्नुहोस् — यसै आ.व. श्रम स्वीकृति लिएका हेर्न"><h3>Final Approval</h3><div class="value" id="d-approved">०</div><div class="sub" id="d-app-sub">M 0 | F 0</div></div>
+    <div class="stat-card c-fly clickable-card" onclick="cardFilter('departed')" title="क्लिक गर्नुहोस् — यसै आ.व. उडेका हेर्न"><h3>✈ Departure</h3><div class="value" id="d-flown">०</div><div class="sub" id="d-flown-sub">This FY 0 | Previous FY 0</div></div>
+    <div class="stat-card c-rem clickable-card" onclick="cardFilter('pending')" title="क्लिक गर्नुहोस् — उड्न बाँकी हेर्न"><h3>⏳ Departure Pending</h3><div class="value" id="d-remaining">०</div><div class="sub" id="d-rem-sub">of 0 approved this FY</div></div>
+    <div class="stat-card c-can clickable-card" onclick="cardFilter('cancel')" title="क्लिक गर्नुहोस् — यसै आ.व.का Cancel हेर्न"><h3>⊘ Cancel</h3><div class="value" id="d-cancel">०</div><div class="sub">&nbsp;</div></div>
+    <div class="stat-card c-can clickable-card" onclick="cardFilter('rejected')" title="क्लिक गर्नुहोस् — यसै आ.व.का Rejected हेर्न"><h3>✗ Rejected</h3><div class="value" id="d-rejected">०</div><div class="sub" id="d-rej-sub">&nbsp;</div></div>
   </div>
 
   <div class="tab-navigation">
@@ -182,8 +189,12 @@ body.role-staff .admin-only{display:none !important;}
       <div class="card">
         <div class="card-title">Worker List</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <input type="text" id="w-search" class="search-control" style="flex:1;min-width:220px;" placeholder="🔍 नाम, पासपोर्ट, देश, कम्पनी, भिसा नं, लट नं..." oninput="renderWorkers()">
-          <select id="w-status-filter" class="form-control" style="width:auto;min-width:160px;margin-bottom:15px;font-weight:600;" onchange="renderWorkers()"></select>
+          <input type="text" id="w-search" class="search-control" style="flex:1;min-width:220px;" placeholder="🔍 नाम, पासपोर्ट, देश, कम्पनी, भिसा नं, लट नं..." oninput="onManualFilter()">
+          <select id="w-status-filter" class="form-control" style="width:auto;min-width:160px;margin-bottom:15px;font-weight:600;" onchange="onManualFilter()"></select>
+        </div>
+        <div class="card-filter-banner" id="card-filter-banner">
+          <span id="card-filter-label"></span>
+          <button onclick="clearCardFilter()">✕ हटाउनुहोस् (सबै हेर्न)</button>
         </div>
         <div style="overflow-x:auto;">
           <table><thead><tr><th>Name (Passport)</th><th>Country / Company</th><th>Job Title</th><th>Status</th><th>Approval Date</th><th>Departure Date</th><th></th></tr></thead>
@@ -608,15 +619,87 @@ document.getElementById('worker-form').addEventListener('submit', async function
   document.getElementById(id).addEventListener('input', function(){ this.value = cleanPassport(this.value); });
 });
 
+let activeCardFilter = null;  // {type, label}
+
+function cardFilter(type){
+  const fy = currentFY();
+  const labels = {
+    pre:'पूर्व स्वीकृति', approved:'Final Approval (श्रम स्वीकृति)', departed:'✈ उडेका (Departure)',
+    pending:'⏳ उड्न बाँकी', cancel:'⊘ Cancel', rejected:'✗ Rejected'
+  };
+  // Pre-Permission अलग tab मा — त्यतै पठाउने
+  if(type==='pre'){ switchTabById('tab-pre'); return; }
+  activeCardFilter = { type, label: labels[type] };
+  // Master Record tab मा जाने
+  switchTabById('tab-workers');
+  // status dropdown/search रिसेट (कार्ड फिल्टर प्राथमिकता)
+  const sfEl = document.getElementById('w-status-filter'); if(sfEl) sfEl.value='';
+  const qEl = document.getElementById('w-search'); if(qEl) qEl.value='';
+  // banner देखाउने + कार्ड हाइलाइट
+  const b = document.getElementById('card-filter-banner');
+  document.getElementById('card-filter-label').innerHTML =
+    `देखाइँदै: <b>${labels[type]}</b> — आ.व. <b>${fy.label}</b> मा`;
+  b.classList.add('show');
+  document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+  event && event.currentTarget && event.currentTarget.classList.add('card-active');
+  renderWorkers();
+}
+
+function clearCardFilter(){
+  activeCardFilter = null;
+  document.getElementById('card-filter-banner').classList.remove('show');
+  document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+  renderWorkers();
+}
+
+function switchTabById(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const tab = document.getElementById(id); if(tab) tab.classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>{ if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes(id)) b.classList.add('active'); });
+}
+
+// कार्ड फिल्टर अनुसार कामदार सूची फर्काउने (आ.व. + श्रेणी)
+function applyCardFilter(list){
+  if(!activeCardFilter) return list;
+  const fy = currentFY();
+  const t = activeCardFilter.type;
+  if(t==='approved') return list.filter(w=>w.status==='Approved' && inFY(w.approveDate, fy));
+  if(t==='departed') return list.filter(w=>w.status==='Approved' && inFY(w.departDate, fy));
+  if(t==='pending')  return list.filter(w=>w.status==='Approved' && inFY(w.approveDate, fy) && !inFY(w.departDate, fy));
+  if(t==='cancel'){
+    return list.filter(w=>w.status==='Cancel' && inFY(w.approveDate || String(w.createdAt||'').slice(0,10), fy));
+  }
+  if(t==='rejected') return list.filter(w=>w.status==='Rejected' && inFY(String(w.createdAt||'').slice(0,10), fy));
+  return list;
+}
+
+function onManualFilter(){
+  // म्यानुअल खोज/status प्रयोग गर्दा कार्ड फिल्टर हट्ने (अलमल नहोस्)
+  if(activeCardFilter){
+    activeCardFilter = null;
+    document.getElementById('card-filter-banner').classList.remove('show');
+    document.querySelectorAll('.clickable-card').forEach(c=>c.classList.remove('card-active'));
+  }
+  renderWorkers();
+}
+
 function renderWorkers(){
   const q = (document.getElementById('w-search').value||'').toLowerCase();
   const sf = document.getElementById('w-status-filter').value;
-  const rows = workers.filter(w =>
+  let rows = workers.filter(w =>
     (!q || (w.name||'').toLowerCase().includes(q) || (w.passport||'').toLowerCase().includes(q)
      || (w.country||'').toLowerCase().includes(q) || (w.company||'').toLowerCase().includes(q)
      || String(w.visaNo||'').toLowerCase().includes(q) || String(w.lotNo||'').toLowerCase().includes(q))
     && (!sf || w.status===sf)
   );
+  rows = applyCardFilter(rows);
+  // कार्ड फिल्टर सक्रिय भए banner लाई हालको आ.व.सँग मिलाउने
+  if(activeCardFilter){
+    const fy = currentFY();
+    document.getElementById('card-filter-label').innerHTML =
+      `देखाइँदै: <b>${activeCardFilter.label}</b> — आ.व. <b>${fy.label}</b> मा`;
+  }
   document.getElementById('w-table').innerHTML = rows.map(w=>`
     <tr>
       <td>${w.name}<br><small style="color:var(--muted)">${w.passport}${w.gender?' • '+gShort(w.gender):''}${w.age?' • '+w.age:''}</small></td>
