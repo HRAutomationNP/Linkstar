@@ -694,6 +694,12 @@ function renderWorkers(){
     && (!sf || w.status===sf)
   );
   rows = applyCardFilter(rows);
+  // नयाँ इन्ट्री माथि (createdAt अनुसार; नभए id अनुसार)
+  rows.sort((a,b)=>{
+    const ca=String(a.createdAt||''), cb=String(b.createdAt||'');
+    if(ca && cb && ca!==cb) return cb.localeCompare(ca);
+    return String(b.id||'').localeCompare(String(a.id||''));
+  });
   // कार्ड फिल्टर सक्रिय भए banner लाई हालको आ.व.सँग मिलाउने
   if(activeCardFilter){
     const fy = currentFY();
@@ -836,10 +842,9 @@ function expiryCell(d){
 }
 function renderPres(){
   const q = (document.getElementById('p-search').value||'').toLowerCase();
-  const fy = currentFY();
+  // सबै आ.व.का पूर्व स्वीकृति देखिने (POA expiry मिति हेर्न) — नयाँ माथि
   const rows = pres.filter(p =>
-    inFY(p.approvalDate, fy)   // माथि छानेको आ.व.को मात्र
-    && (!q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q))
+    !q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q)
   ).sort((a,b)=>(b.approvalDate||'').localeCompare(a.approvalDate||''));
   document.getElementById('p-table').innerHTML = rows.map(p=>`
     <tr>
