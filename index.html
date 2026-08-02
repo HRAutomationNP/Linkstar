@@ -120,6 +120,7 @@ body.role-staff .admin-only{display:none !important;}
       <button onclick="printAuditorList()" title="Auditor Worker List (Monthly/Yearly)">🧾 Auditor</button>
       <button onclick="printDeptSummary()" title="Department Summary">📋 Department</button>
       <button onclick="printAuditReport()" title="Full Report">📊 Full Report</button>
+      <button onclick="printAnusuchi6()" title="अनुसूची ६ — वार्षिक अभिलेख">📋 अनुसूची ६</button>
       <button class="admin-only" onclick="manageUsers()" title="प्रयोगकर्ता व्यवस्थापन">👥</button>
       <button onclick="openChangePass()" title="Password बदल्ने">⚙️</button>
       <button onclick="logout()" title="Logout"><span style="display:none" id="who-is-in"></span>🚪</button>
@@ -183,6 +184,10 @@ body.role-staff .admin-only{display:none !important;}
             <div class="form-group"><label>Orientation</label><select id="w-orientation" class="form-control"><option value="">—</option><option>Yes</option><option>No</option></select></div>
             <div class="form-group"><label>Medical</label><select id="w-medical" class="form-control"><option value="">—</option><option>Yes</option><option>No</option></select></div>
           </div>
+          <div class="form-row">
+            <div class="form-group"><label>नेपालको ठेगाना (जिल्ला)</label><input type="text" id="w-nepal-addr" class="form-control" placeholder="जस्तै: Mahottari"></div>
+            <div class="form-group"><label>सम्पर्क व्यक्तिको ठेगाना</label><input type="text" id="w-contact-addr" class="form-control"></div>
+          </div>
           <button type="submit" class="btn">दर्ता गर्नुहोस्</button>
         </form>
       </div>
@@ -221,6 +226,15 @@ body.role-staff .admin-only{display:none !important;}
             <div class="form-group"><label>माग: महिला</label><input type="number" id="p-female" class="form-control" min="0" value="0"></div>
           </div>
           <div class="form-group"><label>Expiry मिति</label><input type="date" id="p-expiry" class="form-control"></div>
+          <div class="form-row">
+            <div class="form-group"><label>मासिक तलब र सुविधा</label><input type="text" id="p-salary" class="form-control" placeholder="जस्तै: 1000 SR"></div>
+            <div class="form-group"><label>लागत खर्च</label><input type="text" id="p-cost" class="form-control" placeholder="रकम वा 0"></div>
+          </div>
+          <div class="form-group"><label>विदेशको ठेगाना</label><input type="text" id="p-foreign-addr" class="form-control" placeholder="जस्तै: Saudi (देश)"></div>
+          <div class="form-row">
+            <div class="form-group"><label>पदहरू (धेरै भए अल्पविरामले छुट्याउने)</label><input type="text" id="p-professions" class="form-control" placeholder="जस्तै: Worker, Driver, Mason"></div>
+            <div class="form-group"><label>करार अवधि</label><input type="text" id="p-contract-years" class="form-control" value="2" placeholder="वर्ष"></div>
+          </div>
           <div class="form-group"><label>कैफियत</label><input type="text" id="p-remarks" class="form-control"></div>
           <button type="submit" class="btn">दर्ता गर्नुहोस्</button>
         </form>
@@ -325,7 +339,7 @@ body.role-staff .admin-only{display:none !important;}
 // ═══════════════════════════════════════════════════════
 // ⚙️ GITHUB मा upload गर्नुअघि आफ्नो Web App URL यहाँ राख्नुहोस्:
 // ═══════════════════════════════════════════════════════
-const FIXED_API_URL = 'https://script.google.com/macros/s/AKfycbzOuOIqpAZEc9tImjk2RhINEK5IpJom-a26mt9ViIAy8qVtouxwRgjnXSBCMrd1c0mQHQ/exec';
+const FIXED_API_URL = 'https://script.google.com/macros/s/AKfycbwG0-fvKkompBX9FKoFBD9MZaoayCVhvUCXMI_7QPOemT4yK9Sr79_32zdpx4DN2MWJWA/exec';
 
 const LS_URL = 'shram_api_url';
 const SS_KEY = 'shram_session';
@@ -618,6 +632,8 @@ document.getElementById('worker-form').addEventListener('submit', async function
     demandProfession: document.getElementById('w-demandprof').value.trim(),
     orientation: document.getElementById('w-orientation').value,
     medical: document.getElementById('w-medical').value,
+    nepalAddress: document.getElementById('w-nepal-addr').value.trim(),
+    contactAddress: document.getElementById('w-contact-addr').value.trim(),
     status: 'Entry', approveDate:'', departDate:'', remarks:''
   };
   const r = await api('addworker', { worker: w }, null, true);
@@ -846,6 +862,11 @@ document.getElementById('pre-form').addEventListener('submit', async function(e)
     maleCount: Number(document.getElementById('p-male').value)||0,
     femaleCount: Number(document.getElementById('p-female').value)||0,
     expiryDate: document.getElementById('p-expiry').value,
+    salary: document.getElementById('p-salary').value.trim(),
+    costExpense: document.getElementById('p-cost').value.trim(),
+    foreignAddress: document.getElementById('p-foreign-addr').value.trim(),
+    professions: document.getElementById('p-professions').value.trim(),
+    contractYears: document.getElementById('p-contract-years').value.trim() || '2',
     remarks: document.getElementById('p-remarks').value.trim()
   };
   const r = await api('addpre', { pre: p }, null, true);
@@ -1053,6 +1074,69 @@ function carryOverTable(fy){
     <table><thead><tr><th>S.N.</th><th>Name</th><th>Passport No</th><th>Country</th><th>Approval Date</th><th>Departure Date</th></tr></thead>
     <tbody>${rows}</tbody></table>
     <p style="font-size:12px;color:#555;">यी कामदारको कर अघिल्लो आ.व.मै तिरिसकिएको हुनाले यस आ.व.को कर आधारमा समावेश छैन।</p>`;
+}
+
+function printAnusuchi6(){
+  const fy = currentFY();
+  const companyName = (document.querySelector('.header h1')||{}).textContent || '';
+  // यस आ.व.मा उडेका (departure) कामदार — अनुसूची ६ = पठाइएका कामदार
+  const list = workers.filter(w => w.status==='Approved' && inFY(w.departDate, fy))
+                      .sort((a,b)=>String(a.departDate).localeCompare(String(b.departDate)));
+  // लट अनुसार पूर्व स्वीकृति (तलब, विदेश ठेगाना, लागत खर्च)
+  const normLot = v => String(v==null?'':v).trim().replace(/\.0+$/,'');
+  const lotInfo = {};
+  pres.forEach(p=>{ const L=normLot(p.lotNo); if(L) lotInfo[L]={salary:p.salary||'', foreignAddress:p.foreignAddress||'', cost:p.costExpense||'', years:parseInt(p.contractYears,10)||2}; });
+  const addYears = (d,y) => { if(!d) return ''; const x=new Date(d); if(isNaN(x)) return ''; x.setFullYear(x.getFullYear()+(y||2)); return x.toISOString().slice(0,10); };
+
+  const rows = list.map((w,i)=>{
+    const info = lotInfo[normLot(w.lotNo)] || {};
+    const arrived = w.arrivedDate || w.departDate || '';
+    const contractEnd = w.contractEndDate || addYears(w.departDate, info.years);
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="text-align:left;">${w.name||''}</td>
+      <td>${w.nepalAddress||''}</td>
+      <td>${info.foreignAddress||w.country||''}</td>
+      <td>${w.departDate||''}</td>
+      <td>${arrived}</td>
+      <td style="text-align:left;">${w.company||''}</td>
+      <td>${w.demandProfession||w.visaProfession||''}</td>
+      <td>${info.salary||''}</td>
+      <td>${contractEnd}</td>
+      <td>${w.contactAddress||''}</td>
+      <td>${info.cost||''}</td>
+      <td>${w.remarks||''}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="13">यस आ.व.मा पठाइएका कामदार छैनन्।</td></tr>';
+
+  const win = window.open('', '_blank');
+  if(!win){ alert('Popup allow गर्नुहोस्।'); return; }
+  win.document.write(`<html><head><meta charset="UTF-8"><style>
+    body{font-family:'Segoe UI','Kalimati',sans-serif;padding:16px;color:#000;}
+    .title{text-align:center;font-weight:700;font-size:15px;}
+    .sub-title{text-align:center;font-weight:700;font-size:13px;margin-bottom:8px;}
+    .company{font-weight:700;font-size:13px;margin:4px 0;}
+    table{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px;}
+    th,td{border:1px solid #000;padding:3px 4px;text-align:center;vertical-align:middle;}
+    th{background:#f0f0f0;font-size:10px;}
+    @media print{ thead{display:table-header-group;} @page{size:A4 landscape;margin:8mm;} }
+  </style></head><body>
+    <div class="title">नियमावलीको अनुसूची ६</div>
+    <div class="sub-title">वैदेशिक रोजगारमा पठाइएका कामदारहरूको चालु आ.व. को अभिलेख</div>
+    <div class="company">Company name : ${companyName}</div>
+    <div class="company">आ.व. : ${fy.label}&nbsp;&nbsp;&nbsp;&nbsp;जम्मा कामदार : ${list.length}</div>
+    <table>
+      <thead><tr>
+        <th>सि.नं</th><th>कामदारको नाम</th><th>नेपालको ठेगाना</th><th>विदेशको ठेगाना</th>
+        <th>नेपालबाट प्रस्थान मिति</th><th>विदेश पुगेको मिति</th><th>रोजगारदाता संस्थाको नाम</th>
+        <th>विदेशमा गर्ने काम</th><th>मासिक तलब र सुविधा</th><th>करार समाप्त हुने मिति</th>
+        <th>सम्पर्क व्यक्तिको ठेगाना</th><th>लागत खर्च</th><th>कैफियत</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </body></html>`);
+  win.document.close(); win.focus();
+  setTimeout(()=>win.print(), 500);
 }
 
 function openReportWindow(title, bodyHtml){
