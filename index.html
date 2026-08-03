@@ -112,7 +112,7 @@ body.role-staff .admin-only{display:none !important;}
   <header>
     <div>
       <h1>Link Star Manpower Services Pvt. Ltd.</h1>
-      <p>Tokha-10, Kathmandu | License No. 1025/068/69 — श्रम स्वीकृति व्यवस्थापन प्रणाली (FEIMS Record)</p>
+      <p>Tokha-10, Kathmandu — श्रम स्वीकृति व्यवस्थापन प्रणाली </p>
     </div>
     <div class="header-actions">
       <button onclick="refreshData(true)" title="Refresh">🔄 Refresh</button>
@@ -301,7 +301,10 @@ body.role-staff .admin-only{display:none !important;}
         </select>
       </div>
       <div class="form-group"><label>स्वीकृति मिति (Approve Date)</label><input type="date" id="e-approvedate" class="form-control"></div>
-      <div class="form-group"><label>उडान/टिकट मिति (Departure)</label><input type="date" id="e-departdate" class="form-control"></div>
+      <div class="form-row">
+        <div class="form-group"><label>उडान/टिकट मिति (Departure)</label><input type="date" id="e-departdate" class="form-control"></div>
+        <div class="form-group"><label>विदेश पुगेको मिति</label><input type="date" id="e-arriveddate" class="form-control"></div>
+      </div>
       <div class="form-row">
         <div class="form-group"><label>नेपालको ठेगाना (जिल्ला)</label><input type="text" id="e-nepal-addr" class="form-control"></div>
         <div class="form-group"><label>नेपालमा सम्पर्क व्यक्तिको नाम, ठेगाना</label><input type="text" id="e-contact-addr" class="form-control"></div>
@@ -792,6 +795,7 @@ function openWModal(id){
   document.getElementById('e-status').value = w.status||'Entry';
   document.getElementById('e-approvedate').value = w.approveDate||'';
   document.getElementById('e-departdate').value = w.departDate||'';
+  document.getElementById('e-arriveddate').value = w.arrivedDate||'';
   document.getElementById('e-nepal-addr').value = w.nepalAddress||'';
   document.getElementById('e-contact-addr').value = w.contactAddress||'';
   document.getElementById('e-remarks').value = w.remarks||'';
@@ -845,7 +849,7 @@ function saveWorker(){
     status, approveDate: status==='Approved'?approveDate:approveDate, departDate,
     nepalAddress: document.getElementById('e-nepal-addr').value.trim(),
     contactAddress: document.getElementById('e-contact-addr').value.trim(),
-    arrivedDate: w.arrivedDate||'', contractEndDate: w.contractEndDate||'',
+    arrivedDate: document.getElementById('e-arriveddate').value || w.arrivedDate||'', contractEndDate: w.contractEndDate||'',
     remarks: document.getElementById('e-remarks').value.trim()
   };
   // तुरुन्तै स्क्रिनमा
@@ -1214,7 +1218,7 @@ function printAnusuchi6(){
   </style></head><body>
     <div class="title">नियमावलीको अनुसूची ६</div>
     <div class="sub-title">वैदेशिक रोजगारमा पठाइएका कामदारहरूको चालु आ.व. को अभिलेख</div>
-    <div class="company">Company name : ${companyName}</div>
+    <div class="company">RA : ${companyName}</div>
     <div class="company">Lic No : ${COMPANY_LICENSE}</div>
     <div class="company">आ.व. : ${fy.label}&nbsp;&nbsp;&nbsp;&nbsp;जम्मा कामदार : ${list.length}</div>
     <table>
