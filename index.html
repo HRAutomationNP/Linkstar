@@ -112,13 +112,12 @@ body.role-staff .admin-only{display:none !important;}
   <header>
     <div>
       <h1>Link Star Manpower Services Pvt. Ltd.</h1>
-      <p>Tokha-10, Kathmandu | License No. 1106/073/74 — श्रम स्वीकृति व्यवस्थापन प्रणाली </p>
+      <p>Tokha-10, Kathmandu — श्रम स्वीकृति व्यवस्थापन प्रणाली (FEIMS Record)</p>
     </div>
     <div class="header-actions">
       <button onclick="refreshData(true)" title="Refresh">🔄 Refresh</button>
       <button class="admin-only" onclick="exportBackup()" title="Backup">💾 Backup</button>
-      <button onclick="printAuditorList()" title="Auditor Worker List (Monthly/Yearly)">🧾 Auditor</button>
-      <button onclick="printDeptSummary()" title="Department Summary">📋 Department</button>
+      <button onclick="printAuditorList()" title="Auditor — Monthly/Yearly अभिलेख">🧾 Auditor</button>
       <button onclick="printAuditReport()" title="Full Report">📊 Full Report</button>
       <button onclick="printAnusuchi6()" title="अनुसूची ६ — वार्षिक अभिलेख">📋 अनुसूची ६</button>
       <button class="admin-only" onclick="manageUsers()" title="प्रयोगकर्ता व्यवस्थापन">👥</button>
@@ -1159,13 +1158,9 @@ function carryOverTable(fy){
     <p style="font-size:12px;color:#555;">यी कामदारको कर अघिल्लो आ.व.मै तिरिसकिएको हुनाले यस आ.व.को कर आधारमा समावेश छैन।</p>`;
 }
 
-function printAnusuchi6(){
-  const fy = currentFY();
+// साझा: अनुसूची ६ ढाँचामा कामदार सूची render गर्ने
+function renderSchedule6(list, subtitle, periodLabel){
   const companyName = COMPANY_NAME || (document.querySelector('.header h1')||{}).textContent || '';
-  // यस आ.व.मा उडेका (departure) कामदार — अनुसूची ६ = पठाइएका कामदार
-  const list = workers.filter(w => w.status==='Approved' && inFY(w.departDate, fy))
-                      .sort((a,b)=>String(a.departDate).localeCompare(String(b.departDate)));
-  // लट अनुसार पूर्व स्वीकृति (तलब, विदेश ठेगाना, लागत खर्च)
   const normLot = v => String(v==null?'':v).trim().replace(/\.0+$/,'');
   const lotInfo = {};
   pres.forEach(p=>{
@@ -1174,7 +1169,6 @@ function printAnusuchi6(){
     try{ posList = JSON.parse(p.professions||'[]'); if(!Array.isArray(posList)) posList=[]; }catch(e){ posList=[]; }
     lotInfo[L]={ positions:posList, cost:p.costExpense||'', years:parseInt(p.contractYears,10)||2 };
   });
-  // कामदारको पद अनुसार तलब खोज्ने (पद मिले त्यही, नमिले पहिलो)
   function salaryFor(info, prof){
     if(!info || !info.positions || !info.positions.length) return '';
     const pl = info.positions;
@@ -1182,7 +1176,6 @@ function printAnusuchi6(){
     return (hit && hit.salary) || (pl[0] && pl[0].salary) || '';
   }
   const addYears = (d,y) => { if(!d) return ''; const x=new Date(d); if(isNaN(x)) return ''; x.setFullYear(x.getFullYear()+(y||2)); return x.toISOString().slice(0,10); };
-
   const rows = list.map((w,i)=>{
     const info = lotInfo[normLot(w.lotNo)] || {};
     const arrived = w.arrivedDate || w.departDate || '';
@@ -1202,7 +1195,7 @@ function printAnusuchi6(){
       <td>${info.cost||''}</td>
       <td>${w.remarks||''}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="13">यस आ.व.मा पठाइएका कामदार छैनन्।</td></tr>';
+  }).join('') || '<tr><td colspan="13">यस अवधिमा कामदार छैनन्।</td></tr>';
 
   const win = window.open('', '_blank');
   if(!win){ alert('Popup allow गर्नुहोस्।'); return; }
@@ -1217,10 +1210,10 @@ function printAnusuchi6(){
     @media print{ thead{display:table-header-group;} @page{size:A4 landscape;margin:8mm;} }
   </style></head><body>
     <div class="title">नियमावलीको अनुसूची ६</div>
-    <div class="sub-title">वैदेशिक रोजगारमा पठाइएका कामदारहरूको चालु आ.व. को अभिलेख</div>
+    <div class="sub-title">${subtitle}</div>
     <div class="company">RA : ${companyName}</div>
     <div class="company">Lic No : ${COMPANY_LICENSE}</div>
-    <div class="company">आ.व. : ${fy.label}&nbsp;&nbsp;&nbsp;&nbsp;जम्मा कामदार : ${list.length}</div>
+    <div class="company">${periodLabel}&nbsp;&nbsp;&nbsp;&nbsp;जम्मा कामदार : ${list.length}</div>
     <table>
       <thead><tr>
         <th>सि.नं</th><th>कामदारको नाम</th><th>नेपालको ठेगाना</th><th>विदेशको ठेगाना</th>
@@ -1243,6 +1236,35 @@ function printAnusuchi6(){
   setTimeout(()=>win.print(), 500);
 }
 
+// 📋 अनुसूची ६ — पूरै आ.व.मा उडेका (पठाइएका) कामदार
+function printAnusuchi6(){
+  const fy = currentFY();
+  const list = workers.filter(w => w.status==='Approved' && inFY(w.departDate, fy))
+                      .sort((a,b)=>String(a.departDate).localeCompare(String(b.departDate)));
+  renderSchedule6(list, 'वैदेशिक रोजगारमा पठाइएका कामदारहरूको चालु आ.व. को अभिलेख', 'आ.व. : ' + fy.label);
+}
+
+// 🧾 Auditor — मासिक (१% कर) वा वार्षिक; अनुसूची ६ कै ढाँचामा
+function printAuditorList(){
+  const fy = currentFY();
+  // उडेका कामदार (कर उडान/स्वीकृति अनुसार) — यहाँ श्रम स्वीकृति (approveDate) आधार
+  let list = workers.filter(w => w.status==='Approved' && inFY(w.approveDate, fy));
+  const menu = 'कुन अवधिको अभिलेख print गर्ने?\n\n0 = पूरै आर्थिक वर्ष (Yearly)\n' +
+    FY_MONTH_ORDER.map((m,i)=>`${i+1} = ${m}`).join('\n');
+  const pick = prompt(menu, '0');
+  if(pick === null) return;
+  let periodLabel = 'आ.व. : ' + fy.label + ' (पूरै वर्ष)';
+  const pi = parseInt(pick, 10);
+  if(pi >= 1 && pi <= 12){
+    const mName = FY_MONTH_ORDER[pi-1];
+    list = list.filter(w => nepaliMonth(w.approveDate) === mName);
+    periodLabel = 'आ.व. : ' + fy.label + '  |  महिना : ' + mName;
+  }
+  list.sort((a,b)=>String(a.approveDate).localeCompare(String(b.approveDate)));
+  if(!list.length){ alert('यस अवधिमा श्रम स्वीकृति लिएको कुनै कामदार छैन।'); return; }
+  renderSchedule6(list, 'वैदेशिक रोजगारमा पठाइएका कामदारहरूको अभिलेख (कर प्रयोजन)', periodLabel);
+}
+
 function openReportWindow(title, bodyHtml){
   const fy = currentFY();
   const win = window.open('', '_blank');
@@ -1263,64 +1285,6 @@ function openReportWindow(title, bodyHtml){
   </body></html>`);
   win.document.close(); win.focus();
   setTimeout(()=>win.print(), 400);
-}
-
-// 🧾 लेखापरीक्षकलाई: कामदारको पूरा सूची
-function printAuditorList(){
-  const fy = currentFY();
-  const s = fyStats(fy);
-  let list = s.appIn.slice();
-  // महिना छान्ने विकल्प — auditor लाई कहिलेकाहीँ मासिक चाहिन्छ
-  const menu = 'कुन अवधिको सूची print गर्ने?\n\n0 = पूरै आर्थिक वर्ष (Yearly)\n' +
-    FY_MONTH_ORDER.map((m,i)=>`${i+1} = ${m}`).join('\n');
-  const pick = prompt(menu, '0');
-  if(pick === null) return;
-  let periodLabel = 'पूरै आ.व. (Yearly)';
-  const pi = parseInt(pick, 10);
-  if(pi >= 1 && pi <= 12){
-    const mName = FY_MONTH_ORDER[pi-1];
-    list = list.filter(w => nepaliMonth(w.approveDate) === mName);
-    periodLabel = mName + ' महिना (Monthly)';
-  }
-  list.sort((a,b)=>String(a.approveDate).localeCompare(String(b.approveDate)));
-  if(!list.length){ alert(periodLabel + ' मा श्रम स्वीकृति लिएको कुनै कामदार छैन।'); return; }
-  const mCount = list.filter(w=>w.gender==='Male').length;
-  const fCount = list.filter(w=>w.gender==='Female').length;
-  const rows = list.map((w,i)=>`<tr>
-    <td>${i+1}</td><td>${w.name||'-'}</td><td>${w.passport||'-'}</td>
-    <td>${gShort(w.gender)}</td>
-    <td>${w.country||'-'}</td><td>${w.demandProfession||w.visaProfession||'-'}</td>
-    <td>${w.approveDate||'-'}</td><td>${w.departDate||'<i>Pending</i>'}</td></tr>`).join('');
-  openReportWindow('कामदार विवरण (लेखापरीक्षण) — ' + periodLabel, `
-    <h3>Final Approval — Worker List (${list.length}) — ${periodLabel}</h3>
-    <table><thead><tr>
-      <th>S.N.</th><th>Name</th><th>Passport No</th><th>Gender</th>
-      <th>Country</th><th>Job Title</th><th>Approval Date</th><th>Departure Date</th>
-    </tr></thead><tbody>${rows}
-      <tr class="report-total"><td colspan="6">Total (कर आधार) — M ${mCount} / F ${fCount}</td><td colspan="2">${list.length}</td></tr>
-    </tbody></table>
-    <p style="font-size:12px;color:#555;">नोट: रद्द भएका कामदारको श्रम स्वीकृति विभागबाटै रद्द गरी कोटा फिर्ता लिइएकाले यस सूचीमा समावेश छैन।</p>`);
-}
-
-// 📋 विभागलाई: केवल संख्या
-function printDeptSummary(){
-  const fy = currentFY();
-  const s = fyStats(fy);
-  openReportWindow('वैदेशिक रोजगार विभागलाई पेश गर्ने विवरण', `
-    <h3>आ.व. ${fy.label} को संक्षिप्त विवरण</h3>
-    <table><thead><tr><th>Description</th><th>Count</th></tr></thead><tbody>
-      <tr><td>Pre-Permission (Lot ${s.preIn.length})</td><td><b>${s.preM+s.preF}</b> (पु. ${s.preM} / म. ${s.preF})</td></tr>
-      <tr><td>Final Approval</td><td><b>${s.appIn.length}</b> (पु. ${s.appM} / म. ${s.appF})</td></tr>
-      <tr><td>Departure</td><td><b>${s.flownAll}</b></td></tr>
-      <tr><td>Departure Pending</td><td><b>${s.pending}</b></td></tr>
-    </tbody></table>
-    <p style="font-size:12px;color:#555;">नोट: उडान भएका ${s.flownAll} जनामध्ये ${s.flownCohort} जनाले यसै आ.व. र ${s.flownPrev} जनाले अघिल्लो आ.व.मा श्रम स्वीकृति लिएका हुन्। उड्न बाँकी ${s.pending} जना यसै आ.व. स्वीकृति लिएकामध्येका हुन्। स्वीकृति रद्द गरी कोटा फिर्ता गएकाहरू समावेश छैनन्।</p>
-    ${carryOverTable(fy)}
-    <br><br>
-    <table style="width:60%;"><tbody>
-      <tr><td style="border:none;padding-top:36px;">.....................................<br>तयार गर्ने</td>
-          <td style="border:none;padding-top:36px;">.....................................<br>प्रमाणित गर्ने</td></tr>
-    </tbody></table>`);
 }
 
 function printAuditReport(){
