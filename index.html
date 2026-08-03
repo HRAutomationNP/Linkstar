@@ -112,7 +112,7 @@ body.role-staff .admin-only{display:none !important;}
   <header>
     <div>
       <h1>Link Star Manpower Services Pvt. Ltd.</h1>
-      <p>Tokha-10, Kathmandu — श्रम स्वीकृति व्यवस्थापन प्रणाली (FEIMS Record)</p>
+      <p>Tokha-10, Kathmandu &nbsp;|&nbsp; License No: 1025/068/069 &nbsp;—&nbsp; श्रम स्वीकृति व्यवस्थापन प्रणाली</p>
     </div>
     <div class="header-actions">
       <button onclick="refreshData(true)" title="Refresh">🔄 Refresh</button>
@@ -1159,7 +1159,7 @@ function carryOverTable(fy){
 }
 
 // साझा: अनुसूची ६ ढाँचामा कामदार सूची render गर्ने
-function renderSchedule6(list, subtitle, periodLabel){
+function renderSchedule6(list, subtitle, periodLabel, mode){
   const companyName = COMPANY_NAME || (document.querySelector('.header h1')||{}).textContent || '';
   const normLot = v => String(v==null?'':v).trim().replace(/\.0+$/,'');
   const lotInfo = {};
@@ -1191,7 +1191,7 @@ function renderSchedule6(list, subtitle, periodLabel){
       <td>${w.demandProfession||w.visaProfession||''}</td>
       <td>${salaryFor(info, w.demandProfession)}</td>
       <td>${contractEnd}</td>
-      <td>${w.contactAddress||''}</td>
+      <td>${mode==='auditor' ? (w.approveDate||'') : (w.contactAddress||'')}</td>
       <td>${info.cost||''}</td>
       <td>${w.remarks||''}</td>
     </tr>`;
@@ -1219,7 +1219,7 @@ function renderSchedule6(list, subtitle, periodLabel){
         <th>सि.नं</th><th>कामदारको नाम</th><th>नेपालको ठेगाना</th><th>विदेशको ठेगाना</th>
         <th>नेपालबाट प्रस्थान मिति</th><th>विदेश पुगेको मिति</th><th>रोजगारदाता संस्थाको नाम</th>
         <th>विदेशमा गर्ने काम</th><th>मासिक तलब र सुविधा</th><th>करार समाप्त हुने मिति</th>
-        <th>नेपालमा सम्पर्क व्यक्तिको नाम ठेगाना</th><th>लागत खर्च</th><th>कैफियत</th>
+        <th>${mode==='auditor' ? 'श्रम स्वीकृति लिएको मिति' : 'नेपालमा सम्पर्क व्यक्तिको नाम ठेगाना'}</th><th>लागत खर्च</th><th>कैफियत</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -1262,7 +1262,7 @@ function printAuditorList(){
   }
   list.sort((a,b)=>String(a.approveDate).localeCompare(String(b.approveDate)));
   if(!list.length){ alert('यस अवधिमा श्रम स्वीकृति लिएको कुनै कामदार छैन।'); return; }
-  renderSchedule6(list, 'वैदेशिक रोजगारमा पठाइएका कामदारहरूको अभिलेख (कर प्रयोजन)', periodLabel);
+  renderSchedule6(list, 'वैदेशिक रोजगारमा पठाइएका कामदारहरूको अभिलेख (कर प्रयोजन)', periodLabel, 'auditor');
 }
 
 function openReportWindow(title, bodyHtml){
