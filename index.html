@@ -221,20 +221,21 @@ body.role-staff .admin-only{display:none !important;}
             <div class="form-group"><label>देश *</label><input type="text" id="p-country" class="form-control" required></div>
             <div class="form-group"><label>कम्पनी *</label><input type="text" id="p-company" class="form-control" required></div>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label>माग: पुरुष</label><input type="number" id="p-male" class="form-control" min="0" value="0"></div>
-            <div class="form-group"><label>माग: महिला</label><input type="number" id="p-female" class="form-control" min="0" value="0"></div>
+
+          <label style="font-weight:700;display:block;margin:6px 0 4px;">पदहरू (माग विवरण)</label>
+          <div id="p-positions"></div>
+          <button type="button" class="btn btn-sm" style="background:#0284c7;margin-bottom:8px;" onclick="addPositionRow()">➕ अर्को पद थप्नुहोस्</button>
+
+          <div class="form-row" style="background:#f1f5f9;padding:8px;border-radius:6px;">
+            <div class="form-group" style="margin:0;"><label>जम्मा माग: पुरुष</label><input type="number" id="p-male" class="form-control" readonly style="background:#e2e8f0;font-weight:700;" value="0"></div>
+            <div class="form-group" style="margin:0;"><label>जम्मा माग: महिला</label><input type="number" id="p-female" class="form-control" readonly style="background:#e2e8f0;font-weight:700;" value="0"></div>
           </div>
-          <div class="form-group"><label>Expiry मिति</label><input type="date" id="p-expiry" class="form-control"></div>
-          <div class="form-row">
-            <div class="form-group"><label>मासिक तलब र सुविधा</label><input type="text" id="p-salary" class="form-control" placeholder="जस्तै: 1000 SR"></div>
-            <div class="form-group"><label>लागत खर्च</label><input type="text" id="p-cost" class="form-control" placeholder="रकम वा 0"></div>
+
+          <div class="form-row" style="margin-top:8px;">
+            <div class="form-group"><label>Expiry मिति</label><input type="date" id="p-expiry" class="form-control"></div>
+            <div class="form-group"><label>करार अवधि (वर्ष)</label><input type="text" id="p-contract-years" class="form-control" value="2"></div>
           </div>
-          <div class="form-group"><label>विदेशको ठेगाना</label><input type="text" id="p-foreign-addr" class="form-control" placeholder="जस्तै: Saudi (देश)"></div>
-          <div class="form-row">
-            <div class="form-group"><label>पदहरू (धेरै भए अल्पविरामले छुट्याउने)</label><input type="text" id="p-professions" class="form-control" placeholder="जस्तै: Worker, Driver, Mason"></div>
-            <div class="form-group"><label>करार अवधि</label><input type="text" id="p-contract-years" class="form-control" value="2" placeholder="वर्ष"></div>
-          </div>
+          <div class="form-group"><label>लागत खर्च</label><input type="text" id="p-cost" class="form-control" placeholder="रकम वा 0"></div>
           <div class="form-group"><label>कैफियत</label><input type="text" id="p-remarks" class="form-control"></div>
           <button type="submit" class="btn">दर्ता गर्नुहोस्</button>
         </form>
@@ -247,7 +248,7 @@ body.role-staff .admin-only{display:none !important;}
           <button onclick="clearPreFilter()">✕ हटाउनुहोस् (सबै हेर्न)</button>
         </div>
         <div style="overflow-x:auto;">
-          <table><thead><tr><th>Date</th><th>Lot No</th><th>Country</th><th>Company</th><th>M</th><th>F</th><th>Total</th><th>Expiry</th><th></th></tr></thead>
+          <table><thead><tr><th>Date</th><th>Lot No</th><th>Country</th><th>Company</th><th>M</th><th>F</th><th>Total</th><th>Available</th><th>Expiry</th><th></th></tr></thead>
           <tbody id="p-table"></tbody></table>
         </div>
       </div>
@@ -301,6 +302,10 @@ body.role-staff .admin-only{display:none !important;}
       </div>
       <div class="form-group"><label>स्वीकृति मिति (Approve Date)</label><input type="date" id="e-approvedate" class="form-control"></div>
       <div class="form-group"><label>उडान/टिकट मिति (Departure)</label><input type="date" id="e-departdate" class="form-control"></div>
+      <div class="form-row">
+        <div class="form-group"><label>नेपालको ठेगाना (जिल्ला)</label><input type="text" id="e-nepal-addr" class="form-control"></div>
+        <div class="form-group"><label>सम्पर्क व्यक्तिको ठेगाना</label><input type="text" id="e-contact-addr" class="form-control"></div>
+      </div>
       <div class="form-group"><label>कैफियत</label><input type="text" id="e-remarks" class="form-control"></div>
     </div>
     <div id="w-modal-meta" style="font-size:13px;color:var(--muted);margin-bottom:12px;"></div>
@@ -339,7 +344,9 @@ body.role-staff .admin-only{display:none !important;}
 // ═══════════════════════════════════════════════════════
 // ⚙️ GITHUB मा upload गर्नुअघि आफ्नो Web App URL यहाँ राख्नुहोस्:
 // ═══════════════════════════════════════════════════════
-const FIXED_API_URL = 'https://script.google.com/macros/s/AKfycbwG0-fvKkompBX9FKoFBD9MZaoayCVhvUCXMI_7QPOemT4yK9Sr79_32zdpx4DN2MWJWA/exec';
+const FIXED_API_URL = 'https://script.google.com/macros/s/AKfycbwXQGYRXjruuQfKC8Vqui1QH7iIVXqeQpDE7ZBy-Tp3jty5igiP3iQodLPbVDe-2MLapA/exec';
+const COMPANY_NAME = 'Link Star Manpower Services Pvt. Ltd.';
+const COMPANY_LICENSE = '1025/068/069';
 
 const LS_URL = 'shram_api_url';
 const SS_KEY = 'shram_session';
@@ -472,6 +479,8 @@ function initApp(){
   sel.innerHTML = FY_LIST.map(f=>`<option value="${f.label}" ${f.label===todayFY?'selected':''}>${f.label}</option>`).join('');
   // status filter
   document.getElementById('w-status-filter').innerHTML = '<option value="">— All Status —</option>' + Object.keys(STATUS_BADGE).map(s=>`<option>${s}</option>`).join('');
+  // पूर्व स्वीकृति form मा पहिलो पद row
+  if(document.getElementById('p-positions') && document.querySelectorAll('#p-positions .pos-row').length===0){ addPositionRow(); recomputePosTotals(); }
 }
 function logout(){ session=null; sessionStorage.removeItem(SS_KEY); showScreen('login'); }
 async function openChangePass(){
@@ -783,6 +792,8 @@ function openWModal(id){
   document.getElementById('e-status').value = w.status||'Entry';
   document.getElementById('e-approvedate').value = w.approveDate||'';
   document.getElementById('e-departdate').value = w.departDate||'';
+  document.getElementById('e-nepal-addr').value = w.nepalAddress||'';
+  document.getElementById('e-contact-addr').value = w.contactAddress||'';
   document.getElementById('e-remarks').value = w.remarks||'';
   document.getElementById('w-modal-meta').textContent = 'दर्ता: ' + (w.createdAt||'');
   loadHistory(id);
@@ -832,6 +843,9 @@ function saveWorker(){
     orientation: document.getElementById('e-orientation').value,
     medical: document.getElementById('e-medical').value,
     status, approveDate: status==='Approved'?approveDate:approveDate, departDate,
+    nepalAddress: document.getElementById('e-nepal-addr').value.trim(),
+    contactAddress: document.getElementById('e-contact-addr').value.trim(),
+    arrivedDate: w.arrivedDate||'', contractEndDate: w.contractEndDate||'',
     remarks: document.getElementById('e-remarks').value.trim()
   };
   // तुरुन्तै स्क्रिनमा
@@ -854,24 +868,69 @@ async function deleteWorker(){
 // ================= PRE-APPROVAL =================
 document.getElementById('pre-form').addEventListener('submit', async function(e){
   e.preventDefault();
+  const positions = gatherPositions();
+  if(positions.length===0){ alert('कम्तीमा एउटा पद थप्नुहोस्।'); return; }
+  let totM=0, totF=0;
+  positions.forEach(p=>{ totM+=p.m; totF+=p.f; });
   const p = {
     approvalDate: document.getElementById('p-date').value,
     lotNo: document.getElementById('p-lotno').value.trim(),
     country: document.getElementById('p-country').value.trim(),
     company: document.getElementById('p-company').value.trim(),
-    maleCount: Number(document.getElementById('p-male').value)||0,
-    femaleCount: Number(document.getElementById('p-female').value)||0,
+    maleCount: totM,
+    femaleCount: totF,
     expiryDate: document.getElementById('p-expiry').value,
-    salary: document.getElementById('p-salary').value.trim(),
+    salary: positions.map(x=>x.name+': '+x.salary).join(' | '),  // सारांश (सबै पदको तलब)
     costExpense: document.getElementById('p-cost').value.trim(),
-    foreignAddress: document.getElementById('p-foreign-addr').value.trim(),
-    professions: document.getElementById('p-professions').value.trim(),
+    professions: JSON.stringify(positions),  // पूरा पद विवरण (नाम, M/F, तलब)
     contractYears: document.getElementById('p-contract-years').value.trim() || '2',
     remarks: document.getElementById('p-remarks').value.trim()
   };
   const r = await api('addpre', { pre: p }, null, true);
-  if(r.ok){ pres.push(r.pre); this.reset(); renderAll(); alert('✅ दर्ता भयो।'); }
+  if(r.ok){ pres.push(r.pre); this.reset(); posRowSeq=0; document.getElementById('p-positions').innerHTML=''; addPositionRow(); recomputePosTotals(); renderAll(); alert('✅ दर्ता भयो।'); }
 });
+
+// ===== पद विवरण (dynamic rows) =====
+let posRowSeq = 0;
+function addPositionRow(name, m, f, salary){
+  const id = ++posRowSeq;
+  const div = document.createElement('div');
+  div.className = 'pos-row';
+  div.id = 'pos-'+id;
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" class="form-control pos-name" placeholder="पद" value="${name||''}" style="flex:2;margin:0;">
+    <input type="number" class="form-control pos-m" placeholder="पु" min="0" value="${m||0}" style="width:60px;margin:0;" oninput="recomputePosTotals()" title="पुरुष">
+    <input type="number" class="form-control pos-f" placeholder="म" min="0" value="${f||0}" style="width:60px;margin:0;" oninput="recomputePosTotals()" title="महिला">
+    <input type="text" class="form-control pos-salary" placeholder="तलब" value="${salary||''}" style="flex:1;margin:0;" title="मासिक तलब">
+    <button type="button" onclick="removePositionRow(${id})" style="background:#dc2626;color:#fff;border:none;border-radius:5px;width:30px;height:34px;cursor:pointer;" title="हटाउने">✕</button>`;
+  document.getElementById('p-positions').appendChild(div);
+}
+function removePositionRow(id){
+  const el = document.getElementById('pos-'+id);
+  if(el) el.remove();
+  recomputePosTotals();
+}
+function recomputePosTotals(){
+  let m=0, f=0;
+  document.querySelectorAll('#p-positions .pos-row').forEach(r=>{
+    m += Number(r.querySelector('.pos-m').value)||0;
+    f += Number(r.querySelector('.pos-f').value)||0;
+  });
+  document.getElementById('p-male').value = m;
+  document.getElementById('p-female').value = f;
+}
+function gatherPositions(){
+  const out = [];
+  document.querySelectorAll('#p-positions .pos-row').forEach(r=>{
+    const name = r.querySelector('.pos-name').value.trim();
+    const m = Number(r.querySelector('.pos-m').value)||0;
+    const f = Number(r.querySelector('.pos-f').value)||0;
+    const salary = r.querySelector('.pos-salary').value.trim();
+    if(name || m || f || salary) out.push({name, m, f, salary});
+  });
+  return out;
+}
 function expiryCell(d){
   if(!d) return '-';
   const exp = new Date(d), today = new Date();
@@ -906,14 +965,31 @@ function renderPres(){
     (!preCardFY || inFY(p.approvalDate, preCardFY))
     && (!q || (p.country||'').toLowerCase().includes(q) || (p.company||'').toLowerCase().includes(q) || String(p.lotNo||'').toLowerCase().includes(q))
   ).sort((a,b)=>(b.approvalDate||'').localeCompare(a.approvalDate||''));
-  document.getElementById('p-table').innerHTML = rows.map(p=>`
+  // लट अनुसार प्रयोग भएको (श्रम स्वीकृति लिएका) — बाँकी कोटा गणना
+  const normLot = v => String(v==null?'':v).trim().replace(/\.0+$/,'');
+  const usedByLot = {};
+  workers.forEach(w=>{
+    if(w.status!=='Approved') return;
+    const L=normLot(w.lotNo); if(!L) return;
+    if(!usedByLot[L]) usedByLot[L]={M:0,F:0};
+    if(w.gender==='Female') usedByLot[L].F++; else usedByLot[L].M++;
+  });
+  document.getElementById('p-table').innerHTML = rows.map(p=>{
+    const L=normLot(p.lotNo);
+    const dM=Number(p.maleCount)||0, dF=Number(p.femaleCount)||0;
+    const u=usedByLot[L]||{M:0,F:0};
+    const avM=Math.max(0,dM-u.M), avF=Math.max(0,dF-u.F), avT=avM+avF;
+    const avColor = avT>0 ? '#15803d' : '#64748b';
+    return `
     <tr>
       <td>${p.approvalDate||'-'}<br><small style="color:var(--info)">${nepaliMonth(p.approvalDate)}</small></td>
       <td>${p.lotNo||'-'}</td><td>${p.country}</td><td>${p.company}</td>
-      <td>${p.maleCount}</td><td>${p.femaleCount}</td><td><b>${(Number(p.maleCount)||0)+(Number(p.femaleCount)||0)}</b></td>
+      <td>${p.maleCount}</td><td>${p.femaleCount}</td><td><b>${dM+dF}</b></td>
+      <td style="font-weight:700;color:${avColor};">${avM}M / ${avF}F <b>(${avT})</b></td>
       <td>${expiryCell(p.expiryDate)}</td>
       <td><button class="btn btn-sm" onclick="openPModal('${p.id}')">View</button></td>
-    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted)">कुनै रेकर्ड छैन</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--muted)">कुनै रेकर्ड छैन</td></tr>';
 }
 function openPModal(id){
   editingPId = id;
@@ -942,6 +1018,9 @@ function savePre(){
     maleCount: Number(document.getElementById('pe-male').value)||0,
     femaleCount: Number(document.getElementById('pe-female').value)||0,
     expiryDate: document.getElementById('pe-expiry').value,
+    salary: p.salary||'', costExpense: p.costExpense||'',
+    professions: p.professions||'', contractYears: p.contractYears||'2',
+    foreignAddress: p.foreignAddress||'',
     remarks: document.getElementById('pe-remarks').value.trim()
   };
   Object.assign(p, updated);
@@ -1078,14 +1157,26 @@ function carryOverTable(fy){
 
 function printAnusuchi6(){
   const fy = currentFY();
-  const companyName = (document.querySelector('.header h1')||{}).textContent || '';
+  const companyName = COMPANY_NAME || (document.querySelector('.header h1')||{}).textContent || '';
   // यस आ.व.मा उडेका (departure) कामदार — अनुसूची ६ = पठाइएका कामदार
   const list = workers.filter(w => w.status==='Approved' && inFY(w.departDate, fy))
                       .sort((a,b)=>String(a.departDate).localeCompare(String(b.departDate)));
   // लट अनुसार पूर्व स्वीकृति (तलब, विदेश ठेगाना, लागत खर्च)
   const normLot = v => String(v==null?'':v).trim().replace(/\.0+$/,'');
   const lotInfo = {};
-  pres.forEach(p=>{ const L=normLot(p.lotNo); if(L) lotInfo[L]={salary:p.salary||'', foreignAddress:p.foreignAddress||'', cost:p.costExpense||'', years:parseInt(p.contractYears,10)||2}; });
+  pres.forEach(p=>{
+    const L=normLot(p.lotNo); if(!L) return;
+    let posList=[];
+    try{ posList = JSON.parse(p.professions||'[]'); if(!Array.isArray(posList)) posList=[]; }catch(e){ posList=[]; }
+    lotInfo[L]={ positions:posList, cost:p.costExpense||'', years:parseInt(p.contractYears,10)||2 };
+  });
+  // कामदारको पद अनुसार तलब खोज्ने (पद मिले त्यही, नमिले पहिलो)
+  function salaryFor(info, prof){
+    if(!info || !info.positions || !info.positions.length) return '';
+    const pl = info.positions;
+    const hit = pl.find(x => (x.name||'').toLowerCase().trim() === String(prof||'').toLowerCase().trim());
+    return (hit && hit.salary) || (pl[0] && pl[0].salary) || '';
+  }
   const addYears = (d,y) => { if(!d) return ''; const x=new Date(d); if(isNaN(x)) return ''; x.setFullYear(x.getFullYear()+(y||2)); return x.toISOString().slice(0,10); };
 
   const rows = list.map((w,i)=>{
@@ -1096,12 +1187,12 @@ function printAnusuchi6(){
       <td>${i+1}</td>
       <td style="text-align:left;">${w.name||''}</td>
       <td>${w.nepalAddress||''}</td>
-      <td>${info.foreignAddress||w.country||''}</td>
+      <td>${w.country||''}</td>
       <td>${w.departDate||''}</td>
       <td>${arrived}</td>
       <td style="text-align:left;">${w.company||''}</td>
       <td>${w.demandProfession||w.visaProfession||''}</td>
-      <td>${info.salary||''}</td>
+      <td>${salaryFor(info, w.demandProfession)}</td>
       <td>${contractEnd}</td>
       <td>${w.contactAddress||''}</td>
       <td>${info.cost||''}</td>
@@ -1124,6 +1215,7 @@ function printAnusuchi6(){
     <div class="title">नियमावलीको अनुसूची ६</div>
     <div class="sub-title">वैदेशिक रोजगारमा पठाइएका कामदारहरूको चालु आ.व. को अभिलेख</div>
     <div class="company">Company name : ${companyName}</div>
+    <div class="company">Lic No : ${COMPANY_LICENSE}</div>
     <div class="company">आ.व. : ${fy.label}&nbsp;&nbsp;&nbsp;&nbsp;जम्मा कामदार : ${list.length}</div>
     <table>
       <thead><tr>
@@ -1134,6 +1226,14 @@ function printAnusuchi6(){
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    <div style="margin-top:40px;display:flex;justify-content:space-between;font-size:12px;">
+      <div style="text-align:center;">
+        <div style="border-top:1px solid #000;width:200px;padding-top:4px;">इजाजतपत्रवालाको छाप</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="border-top:1px solid #000;width:220px;padding-top:4px;">प्रमाणित गर्ने सञ्चालकको हस्ताक्षर</div>
+      </div>
+    </div>
   </body></html>`);
   win.document.close(); win.focus();
   setTimeout(()=>win.print(), 500);
